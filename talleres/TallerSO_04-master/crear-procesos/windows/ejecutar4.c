@@ -11,8 +11,9 @@ _tmain(int argc, TCHAR *argv[]) {
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
 
+  char comando[] = "/c hello.cmd";
   if (!CreateProcessA(TEXT("C:\\Windows\\SysWOW64\\cmd.exe"),
-		      TEXT("/c hello.cmd"),
+		      comando,
 		      NULL,
 		      NULL,
 		      FALSE,

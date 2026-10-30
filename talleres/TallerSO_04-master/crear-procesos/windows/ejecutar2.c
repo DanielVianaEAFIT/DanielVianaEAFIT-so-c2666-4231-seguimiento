@@ -11,8 +11,10 @@ _tmain(int argc, TCHAR *argv[]) {
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
 
+char comando[] = "nano -l -v ejecutar.c ejecutar2.c";
+
   if (!CreateProcessA(NULL,
-		      TEXT("nano -l -v ejecutar.c ejecutar2.c"),
+		      comando,
 		      NULL,
 		      NULL,
 		      FALSE,

@@ -29,7 +29,7 @@ _tmain(int argc, TCHAR *argv[]) {
 			 &threadId);
 
   if (hThread == NULL) {
-    fprintf(stderr, "No se pudo crear el hilo: %d\r\n", GetLastError());
+    fprintf(stderr, "No se pudo crear el hilo: %lu\r\n", GetLastError());
     ExitProcess(EXIT_FAILURE);
   }
 
@@ -37,7 +37,7 @@ _tmain(int argc, TCHAR *argv[]) {
   DWORD dwReturnValue;
   GetExitCodeThread(hThread, &dwReturnValue);
 
-  fprintf(stdout, "Valor retornado %d\r\n", dwReturnValue);
+  fprintf(stdout, "Valor retornado %lu\r\n", dwReturnValue);
 
   ExitProcess(EXIT_SUCCESS);
 }

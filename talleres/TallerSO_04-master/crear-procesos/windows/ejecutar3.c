@@ -11,8 +11,9 @@ _tmain(int argc, TCHAR *argv[]) {
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
 
+  char comando[] = "notepad texto.txt";
   if (!CreateProcessA(NULL,
-		      TEXT("notepad texto.txt"),
+		      comando,
 		      NULL,
 		      NULL,
 		      FALSE,

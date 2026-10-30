@@ -1,69 +1,82 @@
 #include <windows.h>
 #include <stdio.h>
-#include <tchar.h>
 #include <stdlib.h>
 
-DWORD WINAPI
-funcion_hilo(LPVOID lpParameter) {
+DWORD WINAPI funcion_hilo(LPVOID lpParameter) {
+    int valor = *((int *)lpParameter);
 
-  int valor = *((int*) lpParameter);
-  DWORD dwResultado = valor + 1;
+    printf("Hola mundo desde el hilo: %d\n", valor);
 
-  fprintf(stdout, "Hola mundo desde el hilo: %d\r\n", valor);
+    Sleep(valor * 1000);
 
-  Sleep(valor * 1000); // Esta expresion esta en milisegundos
-
-  dwResultado *= 100;
-
-  return dwResultado;
+    return (DWORD)((valor + 1) * 100);
 }
 
-void
-_tmain(int argc, TCHAR *argv[]) {
-    int nHilos;
-    DWORD dwResultado;
-    int i;
-    DWORD *tablaHilos;
-
+int main(int argc, char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "Uso: %s nHilos\r\n", argv[0]);
-        ExitProcess(EXIT_FAILURE);
+        fprintf(stderr, "Uso: %s nHilos\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
-    nHilos = atoi(argv[1]);
+    int nHilos = atoi(argv[1]);
 
-    if (nHilos == 0) {
-        fprintf(stderr, "Uso: %s nHilos\r\n", argv[0]);
-        ExitProcess(EXIT_FAILURE);
+    if (nHilos <= 0) {
+        fprintf(stderr, "El numero de hilos debe ser positivo.\n");
+        return EXIT_FAILURE;
     }
 
-    tablaHilos = (LPDWORD) malloc(sizeof(LPDWORD) * nHilos);
+    HANDLE *tablaHilos = calloc(nHilos, sizeof(HANDLE));
+    int *valores = malloc(nHilos * sizeof(int));
 
-    for (i = 0; i < nHilos; i++) {
-
-        CreateThread(NULL,
-                     0,
-                     funcion_hilo,
-                     (LPVOID) &i,
-                     0,
-                     (tablaHilos + i));
+    if (tablaHilos == NULL || valores == NULL) {
+        fprintf(stderr, "Error reservando memoria.\n");
+        free(tablaHilos);
+        free(valores);
+        return EXIT_FAILURE;
     }
 
-    for (i = 0; i < nHilos; i++) {
-        HANDLE hThread;
+    for (int i = 0; i < nHilos; i++) {
+        valores[i] = i;
 
-        hThread = OpenThread(THREAD_ALL_ACCESS,
-                             FALSE,
-                             *(tablaHilos + i));
+        tablaHilos[i] = CreateThread(
+            NULL,
+            0,
+            funcion_hilo,
+            &valores[i],
+            0,
+            NULL
+        );
 
-        WaitForSingleObject(hThread, INFINITE);
+        if (tablaHilos[i] == NULL) {
+            fprintf(stderr, "Error creando hilo: %lu\n",
+                    (unsigned long)GetLastError());
 
-        GetExitCodeThread(hThread, &dwResultado);
+            for (int j = 0; j < i; j++) {
+                WaitForSingleObject(tablaHilos[j], INFINITE);
+                CloseHandle(tablaHilos[j]);
+            }
 
-        fprintf(stdout, "El hilo: %d terminó: %d\r\n",
-                *(tablaHilos + i),
-                dwResultado);
+            free(tablaHilos);
+            free(valores);
+            return EXIT_FAILURE;
+        }
     }
 
-    ExitProcess(EXIT_SUCCESS);
+    for (int i = 0; i < nHilos; i++) {
+        WaitForSingleObject(tablaHilos[i], INFINITE);
+
+        DWORD resultado;
+
+        if (GetExitCodeThread(tablaHilos[i], &resultado)) {
+            printf("El hilo %d termino con resultado: %lu\n",
+                   i, (unsigned long)resultado);
+        }
+
+        CloseHandle(tablaHilos[i]);
+    }
+
+    free(tablaHilos);
+    free(valores);
+
+    return EXIT_SUCCESS;
 }

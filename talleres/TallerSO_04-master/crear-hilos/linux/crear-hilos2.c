@@ -60,13 +60,14 @@ main(int argc, char *argv[]) {
 
     int* valorRetorno;
     pthread_join(*(tablaDeHilos +i),
-		 (void **) valorRetorno);
+		 (void **) &valorRetorno);
     fprintf(stdout, "Valor de retorno: %d del hilo: %ld\n",
 	    *valorRetorno, *(tablaDeHilos +i));
     free(valorRetorno);
   }
 
-  exit(1);
+  free(tablaDeHilos);
+  return 0;
 }
 		 
   
